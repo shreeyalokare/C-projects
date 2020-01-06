@@ -1,0 +1,84 @@
+/*
+ Task: Create a program that will input the user name and display includes the users name in a label when the display button is pressed. Include buttons for Display, Clear and Exit and groupbox of radio buttons which changes font color of message.
+ */
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace Assignment1_2
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        private void msgLabel2_Click(object sender, EventArgs e)
+        {
+            
+        }
+        /*Event handler for displaying name from textbox with message,making picturebox visible and disables the textbox*/
+        private void displayButton_Click(object sender, EventArgs e)
+        {
+            String str = nameTextbox.Text;
+            msgLabel2.Text = str + " Welcome. Have a Nice Day!";
+            nameTextbox.Enabled = false;
+            groupBox1.Enabled = true;
+           
+        }
+        //Event handler for clear button- resets textbox and message box
+        private void clearButton_Click(object sender, EventArgs e)
+        {
+            nameTextbox.Text="";
+            msgLabel2.Text = "";
+            nameTextbox.Enabled = true;
+            groupBox1.Enabled = false;
+            nameTextbox.Focus();
+
+        }
+        //Event handler for Black radio button-changes font color of text in message box to black
+        private void blackRadio_CheckedChanged(object sender, EventArgs e)
+        {
+            msgLabel2.ForeColor = System.Drawing.Color.Black;
+        }
+        //Event handler for Chocolate radio button-changes font color of text in message box to chocolate
+        private void chocolateRadio_CheckedChanged(object sender, EventArgs e)
+        {
+            msgLabel2.ForeColor = System.Drawing.Color.Chocolate;
+        }
+        //Event handler for Blue radio button-changes font color of text in message box to blue
+        private void blueRadio_CheckedChanged(object sender, EventArgs e)
+        {
+            msgLabel2.ForeColor = System.Drawing.Color.RoyalBlue;
+        }
+        //Event handler for Green radio button-changes font color of text in message box to green
+        private void greenRadio_CheckedChanged(object sender, EventArgs e)
+        {
+            msgLabel2.ForeColor = System.Drawing.Color.Green;
+        }
+        //Event handler for Exit button- closes the application
+        private void exitButton_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+        //Event handler for picturebox- Changes the picture and label after clicking
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+            clickMeLabel.Text = "Ireland!";
+            pictureBox1.Image = Image.FromFile("C:\\Users\\shree\\OneDrive\\Desktop\\BAP\\ireland flag.png");
+        }
+
+        private void clickMeLabel_Click(object sender, EventArgs e)
+        {
+
+        }
+    }
+}
