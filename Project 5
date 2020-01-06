@@ -1,0 +1,371 @@
+/* Task: Create EPOS application for Da Cheekey Cow Inc which allows to order meal from menu, select size of meal and enter quantity. Application shows price of selected items, stock report and daily tranmaction report. 
+ */
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.IO;
+
+namespace Assignment5
+{
+    public partial class Form1 : Form
+    {
+        //Global arrays
+        readonly static string []mealType = {"Full Irish","Irish Grill","Belmullete Grill","Curry Special","Irish Stew","Studenyt Stew","Bacon & Cabbage","Colcannon","Boxty Special","Atlantic Special","Coddle","Snack Box"};
+        readonly static string[] mealSize = {"Leprechaun","Child","Adult","Student", "Cúchulainn" };
+        
+        int[,] DCC_stock;
+        decimal[,] DCC_price;
+        int[,] copy_file;
+
+        //Global variables
+        int amount,transactionNum,sold,mealSoldCount,count=0;
+        decimal cost,finalCost,orderTotal, totalTransaction;
+        string orders,transaction;
+
+        //Declaring loactions of files as constants
+        const string stockLocation= @"C:\Users\shree\OneDrive\Desktop\BAP\Assignment5\stock_dcc.txt";
+        const string costLocation = @"C:\Users\shree\OneDrive\Desktop\BAP\Assignment5\price_dcc.txt";
+        const string stockReportLocation = @"C:\Users\shree\OneDrive\Desktop\BAP\Assignment5\stock_report.txt";
+        public Form1()
+        {
+            InitializeComponent();
+        }
+        //Reading stock and price files and creating copy of stock array using Clone()
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            DCC_price = ReadPriceFile();
+            DCC_stock = ReadStockFile();
+            copy_file = DCC_stock.Clone() as int[,];
+        }
+        //Event handler for add to order button
+        private void addToOrderButton_Click(object sender, EventArgs e)
+        {
+            int tot_stock;
+            bool selected = false;
+            //Saving selected indices of both listboxes in variables
+            int mealSelect = mealListBox.SelectedIndex;
+            int sizeSelect = sizeListBox.SelectedIndex;
+
+            try
+            {
+                //Checks if meal or size of meal not selected.
+                if (mealSelect != -1 && sizeSelect != -1)
+                {
+                    amount = int.Parse(quantityTextBox.Text);
+                    //Checks if amount is positive integer
+                    if (amount > 0)
+                    {
+                        //Loop for traversing all eleements of meal type array 
+                        for (int mealIndex = 0; mealIndex < mealType.Length; mealIndex++)
+                        {
+                            //
+                            if (mealIndex == mealSelect)
+                            {
+                                //Loop for traversing all eleements of meal type array 
+                                for (int sizeIndex = 0; sizeIndex < mealSize.Length; sizeIndex++)
+                                {
+                                    if (sizeIndex == sizeSelect)
+                                    {
+                                        tot_stock = copy_file[sizeSelect,mealSelect];
+                                        //Checking if the stock is enough.
+                                        if (amount <= tot_stock)
+                                        {
+                                            //Final cost of quantity and its cost
+                                            finalCost = amount * cost;
+                                            copy_file[sizeSelect, mealSelect] = copy_file[sizeSelect, mealSelect] - amount;
+                                            selected = true;
+                                        }
+                                        //If the stock is insufficient
+                                        else
+                                        {
+                                            MessageBox.Show("Stock of selected type of meal is :"+tot_stock, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    //Error message if the quantity is negative or zero
+                    else
+                   {
+                        MessageBox.Show("Enter positive quantity!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                //Error message if the meal or the size is not selected.
+                else
+                {
+                    MessageBox.Show("Meal or meal size not selected! Please select Meal and meal size!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                //Checks if the order is done or not
+                if (selected)
+                {
+                    sold = sold + amount;
+                    orderTotal = orderTotal + finalCost;
+                    totalPriceViewLabel.Text = orderTotal.ToString("c2");
+                    receiptListView.Items.Add(new ListViewItem(new string[] {amount.ToString("c2"),mealType[mealSelect],mealSize[sizeSelect],cost.ToString("c2") }));
+                }
+            }
+            catch
+            {
+                MessageBox.Show("Enter valid quantity!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            completeOrderButton.Enabled = true;
+        }
+        //Event handler to display price when meal and size is selected.
+        private void sizeListBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            mealListBox_SelectedIndexChanged(sender, e);
+        }
+        //Event handler to display price when meal and size are selected from listbox.
+        private void mealListBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            //Saving indices of selected item from listbox.
+            int mealSelect = mealListBox.SelectedIndex;
+            int sizeSelect = sizeListBox.SelectedIndex;
+            //Loop for traversing all elements of meal type array
+            for(int mealIndex = 0; mealIndex < mealType.Length; mealIndex++)
+            {
+                if (mealSelect == mealIndex)
+                {
+                    //Loop for traversing all elements of meal size array
+                    for (int sizeIndex = 0; sizeIndex < mealSize.Length; sizeIndex++)
+                    {
+                        if (sizeSelect == sizeIndex)
+                        {
+                            //Displaying price of selected meal and its size
+                            cost = DCC_price[sizeSelect,mealSelect];
+                            priceViewLabel.Text = cost.ToString("c2");
+                        }
+                    }
+                }
+            }
+            clearButton.Enabled = true;
+            addToOrderButton.Enabled = true;
+            quantityTextBox.Enabled = true;
+        }
+        //Method for reading stock file
+        private int[,] ReadStockFile()
+        {
+            //temporary stock array to save elemnts from file 
+            int[,] stock = new int[mealSize.Length,mealType.Length];
+            try
+            {
+                //Creating stramreader object to read file from given location
+                StreamReader stockRead = File.OpenText(stockLocation);
+                //Loop for traversing all elements of meal size array
+                for(int i = 0; i < mealSize.Length; i++)
+                {
+                    //Storing elements in temporary array, where elements from file are separated by blankspace " ".
+                    string[] stockAvailable = stockRead.ReadLine().Split(' ');
+                    //Loop for traversing all elements of meal type array
+                    for (int j = 0; j < mealType.Length; j++)
+                    {
+                        //Saving details into temporary array
+                        stock[i, j] = int.Parse(stockAvailable[j]);
+                    }
+                }
+                //Closing the file after reading
+                stockRead.Close();
+            }
+            //Exception handling
+            catch
+            {
+                MessageBox.Show("File does not exist", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            //Method returns updated stock of selected meal
+            return stock; 
+        }
+        //Event handler for reading price file
+        private decimal[,] ReadPriceFile()
+        {
+            //Temporary array to store prices of meals and their types from file
+            decimal[,] price = new decimal[mealSize.Length, mealType.Length];
+            try
+            {
+                //Creating streamreader object to read file from given location.
+                StreamReader priceRead = File.OpenText(costLocation);
+                //Loop for traversing all elements of meal size array
+                for (int i = 0; i < mealSize.Length; i++)
+                {
+                  //Storing values in temporary array to read elements from file separated by comma ",".
+                    string[] priceAvailable = priceRead.ReadLine().Split(',');
+                    //Loop for traversing all elements of meal type array
+                    for (int j = 0; j < mealType.Length; j++)
+                    {
+                        //Saving values in temporary array
+                        price[i, j] = decimal.Parse(priceAvailable[j]);
+                    }
+                }
+                //Closing file after reading
+                priceRead.Close();
+            }
+            //Exception handling.
+            catch
+            {
+                MessageBox.Show("File does not exist", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            //Method returns cost of selected meal.
+            return price;
+        }
+        //Method for updating stock into file
+        private void WriteFile()
+        {
+            //Temporary array to store copy of original stock file using Clone().
+            int[,] temp = DCC_stock.Clone() as int[,];
+            try
+            {
+                //Creating streamreader object to write into stock file from given location.
+                StreamWriter writeStock = File.CreateText(stockLocation);
+                //Loop for traversing all elements of meal size array
+                for (int i = 0; i < mealSize.Length; i++)
+                {
+                    //Loop for traversing all elements of meal type array
+                    for (int j = 0; j < mealType.Length; j++)
+                    {
+                        //Criting updated stock separated by comma ",".
+                        writeStock.Write(temp[i,j]+" ");
+                    }
+                    writeStock.WriteLine();
+                }
+                writeStock.Flush();
+                writeStock.Close();
+            }
+            //Exception handling.
+            catch
+            {
+                MessageBox.Show("Error occured while creating the file!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        //Event handler for complete order button
+        private void completeOrderButton_Click(object sender, EventArgs e)
+        {
+            //Creating random number as transaction number 
+            Random number = new Random();
+            transactionNum = number.Next(1000);
+            foreach (ListViewItem item in this.receiptListView.Items)
+            {
+                for(int i = 0; i < item.SubItems.Count; i++)
+                {
+                    switch (i)
+                    {
+                        case 0: orders += String.Format(item.SubItems[i].Text + "       ");
+                                break;
+                        case 1: orders += String.Format(item.SubItems[i].Text + "       ");
+                                break;
+                        case 2: orders += String.Format(item.SubItems[i].Text + "       ");
+                                break;
+                        case 3: orders += String.Format(item.SubItems[i].Text + "       "+"\n");
+                                break;
+                    }
+                }
+                orders += "\n";
+            }
+            //Displaying receipt of transaction in message box.
+            totalPriceViewLabel.Text = orderTotal.ToString("c2");
+            MessageBox.Show("Order Details:- \n\n Transaction Number:"+"        Quantity        Type        Size        Price\n\n"+transactionNum+orders, "ORDER DETAILS", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            transaction += transactionNum + "   "+orders+"   "+orderTotal.ToString("c2");
+            DCC_stock = copy_file.Clone() as int[,];
+            WriteFile();
+            mealSoldCount += sold;
+            totalTransaction+=orderTotal;
+            count++;
+
+            sold = 0;
+            orderTotal = 0;
+            orders = "";
+
+            receiptListView.Items.Clear();
+        }
+        //Event handler for stock report button
+        private void stockReportButton_Click(object sender, EventArgs e)
+        {
+            //Current date and time 
+            string dateTime = DateTime.Now.ToString();
+            try
+            {
+                //Creating streamwriter object to write into file of given location.
+                StreamWriter writeReport = File.CreateText(stockReportLocation);
+                writeReport.WriteLine("Da Cheeck Cow Stock Report:-");
+                writeReport.WriteLine(dateTime);
+                writeReport.WriteLine("Meal Type---------Meal Size---------Quantity");
+                writeReport.WriteLine();
+                //Loop for traversing all elements of meal size array
+                for (int i = 0; i < mealSize.Length; i++)
+                {
+                    //Loop for traversing all elements of meal type array
+                    for (int j = 0; j < mealType.Length; j++)
+                    {
+                        //Writing into file
+                        writeReport.WriteLine(mealType[j] + "---------" + mealSize[i] + "---------" + DCC_stock[i, j]);
+                    }
+                }
+                MessageBox.Show("Check your text file for updated stock report!", "Stock Report", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                writeReport.Flush();
+                writeReport.Close();
+            }
+            //Exception handling
+            catch
+            {
+                MessageBox.Show("Error occured while creating file!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        //Event handler for clear button - resets form
+        private void clearButton_Click(object sender, EventArgs e)
+        {
+            mealListBox.ClearSelected();
+            sizeListBox.ClearSelected();
+            quantityTextBox.Clear();
+            receiptListView.Clear();
+            priceViewLabel.Text = "";
+            totalPriceViewLabel.Text = "";
+            addToOrderButton.Enabled = false;
+            quantityTextBox.Enabled = false;
+            completeOrderButton.Enabled = false;
+        }
+        //Method for transaction reports 
+        private void DailyReport()
+        {
+            //Current date and time
+            string dateTime = DateTime.Now.ToString("ddmmyyyyHHmm");
+            StreamWriter dailyTrans;
+            //Filename for everyday transaction files with current date and time
+            string name = "trans_" + dateTime;
+            string filename = name + ".txt";
+            //Checks if the transactions are available or not
+            if (count >= 1)
+            {
+                MessageBox.Show("Transaction report:-\n\n Total transactions:- " + count + "\nTotal meals sold:- " + mealSoldCount + "\nTotal sales:- " + totalTransaction + "\n Average:- " + (totalTransaction / count).ToString("c2")+"\n\nCheck bin folder for everyday transaction files!", "TRANSACTION REPORT", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            //If no transaction available
+            else
+            {
+                MessageBox.Show("No transaction details available!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            try
+            {
+                //Writing daily transaction report into file
+                dailyTrans = File.CreateText(filename);
+                dailyTrans.WriteLine(transaction);
+                dailyTrans.WriteLine();
+                dailyTrans.Close();
+            }
+            catch
+            {
+                MessageBox.Show("Transaction file does not exist!","Error",MessageBoxButtons.OK,MessageBoxIcon.Error);
+            }
+        }
+        //Event handler for exit button
+        private void exitButton_Click(object sender, EventArgs e)
+        {
+            DailyReport();
+            Application.Exit();
+        }
+    }
+}
