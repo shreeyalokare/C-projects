@@ -1,0 +1,246 @@
+/* Task: Create application that allows to select workshops, locations, meal options and certificate option. Displays selected option before booking and summary after booking.
+ */
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace Assignment3
+{
+    public partial class Form1 : Form
+    {
+        //Global constant and variable.
+        int attempt = 1;
+        const string pwd = "iLoveVisualC#";
+        public Form1()
+        {
+            InitializeComponent();
+        }
+        //Event handler for checking password is correct or not.
+        private void loginButton_Click(object sender, EventArgs e)
+        {
+            //Correct password
+            if (passwordTextBox.Text==pwd)
+            {
+                new Form2().Show();
+                this.Hide();
+            }
+            else
+            {
+                //For forst 3 password attempts.
+                if (attempt < 3)
+                {   
+                    MessageBox.Show("Incorrect Password! You have " + (3 - attempt) + " attempt(s) left!", "Error", MessageBoxButtons.RetryCancel, MessageBoxIcon.Warning);
+                    passwordTextBox.Clear();
+                    passwordTextBox.Select();
+                    attempt++;
+                }
+                //Close if entered incorrect password more than 3 times.
+                else 
+                {
+                    MessageBox.Show("You have entered wrong password 3 times! Try again later!","Error",MessageBoxButtons.OK,MessageBoxIcon.Stop);
+                    this.Close();
+                }
+
+            }
+        }
+    }
+}
+
+
+
+
+Form 2:
+
+/*  Task: Create application that allows to select workshops, locations, meal options and certificate option. Displays selected option before booking and summary after booking.
+ */
+
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace Assignment3
+{
+    public partial class Form2 : Form
+    {
+        //Global variables.
+        decimal regValue, lodgingFee, mealFee, certFee, total;
+        decimal regCost = 0, lodgeCost = 0, mealCost = 0, certCost = 0, totCost = 0;
+        int count, days;
+
+        //Global Constant variables.
+        const decimal ASP_NET = 1200, WINFORMS = 1000, DOT_NET_PART1 = 1500, DOT_NET_PART2 = 1800, DETOX = 599;
+      
+        const int ASP_DAYS = 4, WINFORM_DAYS = 3,DOTNET1_DAYS = 4,DOTNET2_DAYS = 4,DETOX_DAYS = 1;
+
+        const decimal CORK_FEE=150, DUBLIN_FEE=225, GALWAY_FEE=175, LIMERICK_FEE=135, WEXFORD_FEE=89, BELMULLET_FEE=305;
+
+        const decimal FULL_MEAL = 39.50m, HALF_MEAL = 27.50m, BREAKFAST_MEAL = 12.50m;
+
+        const decimal PRINTED_CERT = 29.95m;
+
+        public Form2()
+        {
+            InitializeComponent();
+        }
+
+        //Event for Display Button
+        private void displayButton_Click(object sender, EventArgs e)
+        {
+            //Error message display if workshop or location is not selected.
+            if (workshopsListBox.SelectedIndex == -1 || locationListBox.SelectedIndex == -1)
+            {
+                MessageBox.Show("No Workshop or Location selected!","Error",MessageBoxButtons.OK,MessageBoxIcon.Error);
+            }
+            else
+            {
+                displayPanel.Visible = true;
+                //Switch case for workshop selection.
+                switch (workshopsListBox.SelectedIndex)
+                {
+                    case 0:
+                        displayDaysLabel.Text = ASP_DAYS.ToString();
+                        regCostDispLabel.Text = ASP_NET.ToString();
+                        regValue = ASP_NET;
+                        days = ASP_DAYS;
+                        break;
+                    case 1:
+                        displayDaysLabel.Text = WINFORM_DAYS.ToString();
+                        regCostDispLabel.Text = WINFORMS.ToString("C2");
+                        regValue = WINFORMS;
+                        days = WINFORM_DAYS;
+                        break;
+                    case 2:
+                        displayDaysLabel.Text = DOTNET1_DAYS.ToString();
+                        regCostDispLabel.Text = DOT_NET_PART1.ToString("C2");
+                        regValue = DOT_NET_PART1;
+                        days = DOTNET1_DAYS;
+                        break;
+                    case 3:
+                        displayDaysLabel.Text = DOTNET2_DAYS.ToString();
+                        regCostDispLabel.Text = DOT_NET_PART2.ToString("C2");
+                        regValue = DOT_NET_PART2;
+                        days = DOTNET2_DAYS;
+                        break;
+                    case 4:
+                        displayDaysLabel.Text = DETOX_DAYS.ToString();
+                        regCostDispLabel.Text = DETOX.ToString("C2");
+                        regValue = DETOX;
+                        days = DETOX_DAYS;
+                        break;
+                }
+                //Switch case for Location selection.
+                switch (locationListBox.SelectedIndex)
+                {
+                    case 0:
+                        lodgingFee = CORK_FEE;
+                        break;
+                    case 1:
+                        lodgingFee = DUBLIN_FEE;
+                        break;
+                    case 2:
+                        lodgingFee = GALWAY_FEE;
+                        break;
+                    case 3:
+                        lodgingFee = BELMULLET_FEE;
+                        break;
+                    case 4:
+                        lodgingFee = LIMERICK_FEE;
+                        break;
+                    case 5:
+                        lodgingFee = WEXFORD_FEE;
+                        break;
+                }
+                //Adding printed certificate fee if checkbox is checked.
+                if (certificateCheckBox.Checked == true)
+                {
+                    certFee = PRINTED_CERT;
+                }
+                else
+                {
+                    certFee = 0.0m;
+                }
+                //Switch case for meal selection.
+                switch (mealComboBox.SelectedIndex)
+                {
+                    case 0:
+                        mealFee = FULL_MEAL;
+                        break;
+                    case 1:
+                        mealFee = HALF_MEAL;
+                        break;
+                    case 2:
+                        mealFee = BREAKFAST_MEAL;
+                        break;
+                }
+                //Calculations for display panel.
+                workshopDisplayLabel.Text = (workshopsListBox.SelectedItem).ToString();
+                total = regValue + (lodgingFee * days) + (mealFee * days) + certFee;
+                totalCostDispLabel.Text = total.ToString("C2");
+                lodgingCostDispLabel.Text = (lodgingFee * days).ToString("C2");
+
+                bookButton.Enabled = true;
+            }
+        }
+        //Event handler for book button.
+        private void bookButton_Click(object sender, EventArgs e)
+        {
+            displayPanel.Visible = false;
+            summaryButton.Enabled = true;
+            bookButton.Enabled = false;
+            displayButton.Enabled = false;
+
+            MessageBox.Show("Workshop Selected: "+workshopsListBox.SelectedItem.ToString()+"\n Location : "+locationListBox.SelectedItem.ToString()+ "\n Total Cost: €" + total,"Booking Confirmation",MessageBoxButtons.OK,MessageBoxIcon.Information);
+
+            count++;// Variable for counting total bookings.
+
+            //Adding values of all bookings.
+            regCost += regValue;
+            lodgeCost += (lodgingFee*days);
+            certCost += certFee;
+            mealCost += (mealFee * days);
+            totCost += total;
+        }
+        //Event handler for summery display.
+        private void summaryButton_Click(object sender, EventArgs e)
+        {
+            
+            summaryPanel.Visible = true;
+            totBookingDispLabel.Text = count.ToString();
+            totRegDispLabel.Text = regCost.ToString("C2");
+            totLodgingDispLabel.Text = lodgeCost.ToString("C2");
+            avgRevDispLabel.Text = (totCost / count).ToString("C2"); 
+            valOptDispLabel.Text = (mealCost + certCost).ToString("C2");
+        }
+        //Event handler for Clear button-Resets form.
+        private void clearButton_Click(object sender, EventArgs e)
+        {
+            workshopsListBox.ClearSelected();
+            locationListBox.ClearSelected();
+            mealComboBox.Text = "--Select--";
+            certificateCheckBox.Checked = false;
+            summaryPanel.Visible = false;
+            displayPanel.Visible = false;
+            bookButton.Enabled = false;
+            displayButton.Enabled = true;
+        }
+        //Event handler for Exit button-Closes the application.
+        private void exitButton_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+    }
+}
