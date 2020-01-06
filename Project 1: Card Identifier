@@ -1,0 +1,54 @@
+
+/* Task: Create application with five PictureBox controls. Each PictureBox should display a different card from the set of images. Card name should be displayed after clicking on card.
+ */
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace Assignment1_1
+{
+    public partial class CardIdentifier : Form
+    {
+        public CardIdentifier()
+        {
+            InitializeComponent();
+        }
+        //event for displaying "eight of diamond" in label
+        private void eightDiamondPictureBox_Click(object sender, EventArgs e)
+        {
+            answerLabel.Text = "Eight of Diamond";
+        }
+        //event for displaying "two of clubs" in label
+        private void twoClubPictureBox_Click(object sender, EventArgs e)
+        {
+            answerLabel.Text = "Two of Clubs";
+        }
+        //event for displaying "king of spades" in label
+        private void kingSpadePictureBox_Click(object sender, EventArgs e)
+        {
+            answerLabel.Text = "King of Spades";
+        }
+        //event for displaying "ace of spades" in label
+        private void aceSpadePictureBox_Click(object sender, EventArgs e)
+        {
+            answerLabel.Text = "Ace of Spades";
+        }
+        //event for displaying "joker" in label
+        private void jokerPictureBox_Click(object sender, EventArgs e)
+        {
+            answerLabel.Text = "Joker";
+        }
+        //event for closing the application after clicking Exit button
+        private void exitButton_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+    }
+}
