@@ -1,0 +1,151 @@
+/* 
+ Task: Create an application that allows cashier to input number of tickets, calculates the cost of tickets, view summary of all transactions and counts total number of cashiers.
+ */
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace Assignment2
+{
+    public partial class Form1 : Form
+    {
+        //Global variables
+        private const decimal adult_basic_ticket = 7.70m;
+        private const decimal student_basic_ticket = 7.00m;
+        private const decimal child_basic_ticket = 6.25m;
+
+        private decimal total_tickets_sold;
+        private decimal total_receipts;
+
+        private int count = 0;
+        private decimal summary_total_tickets=0;
+        private decimal summary_total_receipts = 0;
+        
+        public Form1()
+        {
+            InitializeComponent();
+        }
+        //Event handler for calculating ticket and cinema summary
+        private void calculateButton_Click(object sender, EventArgs e)
+        {
+            //Local variables
+            decimal adultCount, studentCount, childCount;
+
+            //Attributes for message box
+            string msg = "Invalid input! Please Enter Numerical Data!";
+            string title = "Error";
+            MessageBoxButtons buttons = MessageBoxButtons.OK;
+
+            //Input validation for cashier name
+            String cashierName = cashierTextBox.Text;
+            cashierNameDisplay2Lable.Text = cashierName;
+            if (cashierName == null || cashierName == "")
+            {
+                MessageBox.Show("No data entered! Please enter name!",title,buttons,MessageBoxIcon.Error);
+                cashierTextBox.Focus();
+            }
+            else
+            {
+                //Exception handling for adult text box
+                try
+                {
+                    adultCount = int.Parse(adultTextBox.Text);
+                    //Exception handling for student text box
+                    try
+                    {
+                        studentCount = int.Parse(studentTextBox.Text);
+                        //Exception handling for child text box
+                        try
+                        {
+                            //Calculation for basic ticket fare of adult, student and child
+                            childCount = int.Parse(childTextBox.Text);
+
+                            //Calculation for total number of tickets, receipts
+                            total_tickets_sold = (adultCount + studentCount + childCount);
+                            total_receipts = (adultCount * adult_basic_ticket) + (childCount * child_basic_ticket) * (studentCount * student_basic_ticket);
+                            totalTicketsSoldDisplayLabel.Text = total_tickets_sold.ToString();
+                            totalReceiptsDisplayLabel.Text = total_receipts.ToString("C2");
+                            avgPricePaidDisplayLabel.Text = (total_receipts / total_tickets_sold).ToString("C2");
+
+                            //Calculations for cinema summary
+                            summary_total_tickets = total_tickets_sold + summary_total_tickets;
+                            summary_total_receipts = total_receipts + summary_total_receipts;
+
+                            //Calculation for incrementing count of cashiers
+                            count++;
+                            totalCashier2Label.Text = count.ToString();
+
+                            cashierSummaryGroupBox.Visible = true;
+                            cinemaSummaryGroupBox.Visible = false;
+                            calculateButton.Enabled = false;
+                            summaryButton.Enabled = true;
+                        }
+                        //Error message for child textbox, validates the input, focus on textbox and highlights the incorrect text
+                        catch
+                        {
+                            MessageBox.Show(msg, title, buttons, MessageBoxIcon.Error);
+                            childTextBox.Focus();
+                            childTextBox.SelectAll();
+                        }
+                    }
+                    //Error message for child textbox,validates the input, focus on textbox and highlights the incorrect text
+                    catch
+                    {
+                        MessageBox.Show(msg, title, buttons, MessageBoxIcon.Error);
+                        studentTextBox.Focus();
+                        studentTextBox.SelectAll();
+                    }
+                }
+                //Error message for child textbox,validates the input, focus on textbox and highlights the incorrect text
+                catch
+                {
+                    MessageBox.Show(msg, title, buttons, MessageBoxIcon.Error);
+                    adultTextBox.Focus();
+                    adultTextBox.SelectAll();
+                }
+            }
+        }
+
+        //Event handler for summary button
+        private void summaryButton_Click(object sender, EventArgs e)
+        {
+            cinemaSummaryGroupBox.Visible = true;
+            ticketSoldGroupBox.Visible = false;
+            cashierTextBox.Visible = false;
+            cashierNameEnterLabel.Visible = false;
+
+            //Calculation for cinema summary 
+            totalTicketSold2Label.Text = summary_total_tickets.ToString();
+            totalReceiptsSummary2Label.Text = summary_total_receipts.ToString("C2");
+            avgPricePaidSummary2Label.Text = (summary_total_receipts/ summary_total_tickets).ToString("C2");
+        }
+        //Event handler for exit button-Closes the application
+        private void exitButton_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+        //Event handler for clear button-resets the form
+        private void clearButton_Click(object sender, EventArgs e)
+        {
+            cashierSummaryGroupBox.Visible = false;
+            cinemaSummaryGroupBox.Visible = false;
+            ticketSoldGroupBox.Visible = true;
+            cashierTextBox.Visible = true;
+            cashierNameEnterLabel.Visible = true;
+
+            cashierTextBox.Clear();
+            adultTextBox.Clear();
+            studentTextBox.Clear();
+            childTextBox.Clear();
+
+            calculateButton.Enabled = true;
+            cashierTextBox.Select();
+        }
+    }
+}
